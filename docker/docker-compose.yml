@@ -54,7 +54,7 @@ services:
 
   # FreeSWITCH B2BUA
   freeswitch:
-    image: signalwire/freeswitch:latest
+    image: safarov/freeswitch:latest
     container_name: voip-freeswitch
     restart: unless-stopped
     environment:

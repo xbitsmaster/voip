@@ -66,6 +66,9 @@ VALUES ('100134001', 'voip.com', 'voip', MD5('100134001:voip.com:voip'), MD5('10
 INSERT IGNORE INTO subscriber (username, domain, password, ha1, ha1b)
 VALUES ('100134002', 'voip.com', 'voip', MD5('100134002:voip.com:voip'), MD5('100134002@voip.com:voip.com:voip'));
 
+-- 修改voip用户使用mysql_native_password认证（兼容Kamailio的MySQL驱动）
+ALTER USER 'voip'@'%' IDENTIFIED WITH mysql_native_password BY 'voip_password';
+
 -- 授权
 GRANT ALL PRIVILEGES ON voip.* TO 'voip'@'%';
 FLUSH PRIVILEGES;
