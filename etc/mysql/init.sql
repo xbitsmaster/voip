@@ -66,6 +66,25 @@ VALUES ('100134001', 'voip.com', 'voip', MD5('100134001:voip.com:voip'), MD5('10
 INSERT IGNORE INTO subscriber (username, domain, password, ha1, ha1b)
 VALUES ('100134002', 'voip.com', 'voip', MD5('100134002:voip.com:voip'), MD5('100134002@voip.com:voip.com:voip'));
 
+-- Dispatcher表 (Kamailio负载均衡/故障检测)
+CREATE TABLE IF NOT EXISTS dispatcher (
+    id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    setid INT(11) NOT NULL DEFAULT 0,
+    destination VARCHAR(192) NOT NULL DEFAULT '',
+    flags INT(11) NOT NULL DEFAULT 0,
+    priority INT(11) NOT NULL DEFAULT 0,
+    attrs VARCHAR(128) NOT NULL DEFAULT '',
+    description VARCHAR(64) NOT NULL DEFAULT '',
+    UNIQUE KEY destination_idx (destination)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 插入dispatcher版本信息
+INSERT IGNORE INTO version (table_name, table_version) VALUES ('dispatcher', 4);
+
+-- 插入默认FreeSWITCH节点
+INSERT IGNORE INTO dispatcher (setid, destination, flags, priority, attrs, description)
+VALUES (1, 'sip:voip-freeswitch:5060', 0, 0, '', 'FreeSWITCH Default');
+
 -- 修改voip用户使用mysql_native_password认证（兼容Kamailio的MySQL驱动）
 ALTER USER 'voip'@'%' IDENTIFIED WITH mysql_native_password BY 'voip_password';
 
