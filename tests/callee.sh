@@ -82,7 +82,6 @@ if [ "$AUTO_ANSWER" = true ]; then
 --username=$CALLEE_USER
 --password=$CALLEE_PASSWORD
 --proxy=sip:$SERVER:$SIP_PORT
---use-cli
 --no-stderr
 --log-level=3
 --app-log-level=3
@@ -98,7 +97,6 @@ else
 --username=$CALLEE_USER
 --password=$CALLEE_PASSWORD
 --proxy=sip:$SERVER:$SIP_PORT
---use-cli
 --no-stderr
 --log-level=3
 --app-log-level=3
@@ -110,7 +108,49 @@ echo "启动pjsua等待来电..."
 echo "提示: 按'h'查看帮助, 按'a'接听, 按'q'退出"
 echo ""
 
-pjsua --config-file="$PJSUA_CFG"
+# 使用expect保持pjsua运行
+if command -v expect &> /dev/null; then
+    expect << EXPECT_EOF
+    set timeout -1
+    spawn pjsua --config-file=$PJSUA_CFG
+
+    # 等待注册成功
+    expect {
+        "registration success" {
+            puts "\n>>> 注册成功，等待来电..."
+        }
+        timeout {
+            puts "注册超时"
+            exit 1
+        }
+    }
+
+    # 持续等待来电和处理
+    expect {
+        "CONFIRMED" {
+            puts "\n>>> 呼叫已接通!"
+            exp_continue
+        }
+        "DISCONNECTED" {
+            puts "\n>>> 呼叫已断开"
+            exp_continue
+        }
+        "Incoming call" {
+            puts "\n>>> 收到来电，自动接听..."
+            exp_continue
+        }
+        eof {
+            puts "\npjsua已退出"
+        }
+    }
+
+    # 保持交互
+    interact
+EXPECT_EOF
+else
+    # 没有expect，直接运行
+    pjsua --config-file="$PJSUA_CFG"
+fi
 
 # 清理
 rm -f "$PJSUA_CFG"

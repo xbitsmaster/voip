@@ -1,0 +1,18 @@
+<include>
+  <!-- Kamailio Integration - Route calls back to Kamailio -->
+  
+  <!-- Route all calls from Kamailio back to Kamailio gateway -->
+  <extension name="kamailio_route">
+    <condition field="destination_number" expression="^(\d+)$">
+      <action application="log" data="INFO Routing call to ${destination_number} via Kamailio gateway"/>
+      <action application="set" data="hangup_after_bridge=true"/>
+      <action application="set" data="continue_on_fail=false"/>
+      <action application="set" data="effective_caller_id_number=${caller_id_number}"/>
+      <action application="set" data="effective_caller_id_name=${caller_id_name}"/>
+      <!-- 保留 X-Via-FS header 传递给目标 -->
+      <action application="set" data="sip_h_X-Via-FS=yes"/>
+      <action application="bridge" data="sofia/external/${destination_number}@voip-kamailio:5060"/>
+    </condition>
+  </extension>
+  
+</include>

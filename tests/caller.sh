@@ -94,7 +94,6 @@ cat > "$PJSUA_CFG" << EOF
 --username=$CALLER_USER
 --password=$CALLER_PASSWORD
 --proxy=sip:$SERVER:$SIP_PORT
---use-cli
 --no-stderr
 --log-level=3
 --app-log-level=3
@@ -109,7 +108,7 @@ echo ""
 # 使用expect自动化呼叫（如果可用）
 if command -v expect &> /dev/null; then
     expect << EXPECT_EOF
-    set timeout -1
+    set timeout 60
     spawn pjsua --config-file=$PJSUA_CFG
 
     # 等待注册成功
@@ -117,12 +116,37 @@ if command -v expect &> /dev/null; then
         "registration success" {
             sleep 1
             send "m\r"
-            expect "Enter URL"
+            expect "Make call:"
             send "$CALLEE_URI\r"
         }
         timeout {
             puts "注册超时"
             exit 1
+        }
+    }
+
+    # 等待呼叫响应
+    expect {
+        "CONFIRMED" {
+            puts "\\n呼叫已接通!"
+        }
+        "DISCONNECTED" {
+            puts "\\n呼叫断开"
+        }
+        "DISCONNCTD" {
+            puts "\\n呼叫断开"
+        }
+        "Busy Here" {
+            puts "\\n对方忙"
+        }
+        "Not Found" {
+            puts "\\n用户不存在"
+        }
+        "Temporarily Unavailable" {
+            puts "\\n对方暂时不可用"
+        }
+        timeout {
+            puts "\\n等待响应超时"
         }
     }
 
