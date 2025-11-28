@@ -1,0 +1,31 @@
+<configuration name="acl.conf" description="Network Access Control Lists">
+
+  <network-lists>
+    <!-- Kamailio服务器ACL -->
+    <list name="kamailio" default="deny">
+      <!-- 允许Kamailio容器访问 -->
+      <node type="allow" cidr="172.16.0.0/12"/>
+      <node type="allow" cidr="192.168.0.0/16"/>
+      <node type="allow" cidr="10.0.0.0/8"/>
+      <!-- Docker网络 -->
+      <node type="allow" cidr="voip-kamailio/32"/>
+    </list>
+
+    <!-- 本地网络 -->
+    <list name="localnet.auto" default="allow">
+      <node type="allow" cidr="172.16.0.0/12"/>
+      <node type="allow" cidr="192.168.0.0/16"/>
+      <node type="allow" cidr="10.0.0.0/8"/>
+      <node type="allow" cidr="127.0.0.0/8"/>
+    </list>
+
+    <!-- NAT检测 -->
+    <list name="nat.auto" default="allow">
+      <node type="allow" cidr="172.16.0.0/12"/>
+      <node type="allow" cidr="192.168.0.0/16"/>
+      <node type="allow" cidr="10.0.0.0/8"/>
+    </list>
+
+  </network-lists>
+
+</configuration>

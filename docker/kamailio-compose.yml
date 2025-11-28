@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  kamailio:
+    image: kamailio/kamailio:5.7.2-bullseye
+    container_name: voip-kamailio
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: voip-mysql
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5061:5061/tcp"
+    volumes:
+      - ./kamailio-config:/etc/kamailio
+    networks:
+      - voip-network
+    depends_on:
+      - mysql
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+
+networks:
+  voip-network:
+    external: true
+    name: docker_voip-network

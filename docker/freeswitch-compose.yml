@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  freeswitch:
+    image: signalwire/freeswitch:1.10.11-release
+    container_name: voip-freeswitch
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: voip-mysql
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "5080:5060/udp"
+      - "5080:5060/tcp"
+      - "8021:8021/tcp"
+      - "16384-32768:16384-32768/udp"
+    volumes:
+      - ./freeswitch-config:/etc/freeswitch
+      - freeswitch_data:/var/lib/freeswitch
+    networks:
+      - voip-network
+    depends_on:
+      - mysql
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+
+volumes:
+  freeswitch_data:
+
+networks:
+  voip-network:
+    external: true
+    name: docker_voip-network

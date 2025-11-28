@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: voip-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: voip_root_password
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - voip-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pvoip_root_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
+
+networks:
+  voip-network:
+    driver: bridge

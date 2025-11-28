@@ -1,0 +1,73 @@
+<include>
+  <!--
+    FreeSWITCH 拨号计划 - Kamailio集成
+    处理来自Kamailio的呼叫，并回送到Kamailio
+
+    呼叫流程: UA1 -> Kamailio -> FreeSWITCH -> Kamailio -> UA2
+  -->
+
+  <context name="kamailio">
+
+    <!-- 默认处理所有呼叫 -->
+    <extension name="kamailio_route">
+      <condition field="destination_number" expression="^(.*)$">
+        <!-- 日志记录 -->
+        <action application="log" data="INFO [${uuid}] Incoming call from Kamailio: ${caller_id_number} -> ${destination_number}"/>
+
+        <!-- 设置呼叫变量 -->
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="set" data="continue_on_fail=false"/>
+
+        <!-- 保留原始主叫号码 -->
+        <action application="set" data="effective_caller_id_number=${caller_id_number}"/>
+        <action application="set" data="effective_caller_id_name=${caller_id_name}"/>
+
+        <!-- 回送到Kamailio，由Kamailio路由到目标UA -->
+        <action application="log" data="INFO [${uuid}] Bridging call to Kamailio gateway: ${destination_number}"/>
+        <action application="bridge" data="sofia/gateway/kamailio/${destination_number}"/>
+
+      </condition>
+    </extension>
+
+    <!-- 媒体处理示例 - 可添加录音、IVR等功能 -->
+    <extension name="with_recording" continue="false">
+      <condition field="destination_number" expression="^9(\d+)$" break="on-true">
+        <!-- 以9开头的号码启用录音 -->
+        <action application="log" data="INFO [${uuid}] Call with recording enabled"/>
+        <action application="set" data="RECORD_STEREO=true"/>
+        <action application="set" data="media_bug_answer_req=true"/>
+        <action application="record_session" data="$${recordings_dir}/${uuid}.wav"/>
+        <action application="bridge" data="sofia/gateway/kamailio/$1"/>
+      </condition>
+    </extension>
+
+    <!-- 回声测试 - 用于测试媒体连通性 -->
+    <extension name="echo_test">
+      <condition field="destination_number" expression="^9196$">
+        <action application="answer"/>
+        <action application="log" data="INFO [${uuid}] Echo test started"/>
+        <action application="echo"/>
+      </condition>
+    </extension>
+
+    <!-- 保持音乐测试 -->
+    <extension name="moh_test">
+      <condition field="destination_number" expression="^9197$">
+        <action application="answer"/>
+        <action application="log" data="INFO [${uuid}] MOH test started"/>
+        <action application="playback" data="local_stream://moh"/>
+      </condition>
+    </extension>
+
+    <!-- 音调测试 -->
+    <extension name="tone_test">
+      <condition field="destination_number" expression="^9198$">
+        <action application="answer"/>
+        <action application="log" data="INFO [${uuid}] Tone test started"/>
+        <action application="tone_stream" data="%(1000,0,350,440)"/>
+      </condition>
+    </extension>
+
+  </context>
+
+</include>

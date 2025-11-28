@@ -1,0 +1,88 @@
+#
+# VoIP 完整部署配置
+# 呼叫流程: UA1 -> Kamailio -> FreeSWITCH -> Kamailio -> UA2
+#
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: voip-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: voip_root_password
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - voip-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pvoip_root_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kamailio SIP代理
+  kamailio:
+    image: kamailio/kamailio-ci:latest
+    container_name: voip-kamailio
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: voip-mysql
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5061:5061/tcp"
+    volumes:
+      - ../etc/kamailio:/etc/kamailio:ro
+    networks:
+      - voip-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+
+  # FreeSWITCH B2BUA
+  freeswitch:
+    image: signalwire/freeswitch:latest
+    container_name: voip-freeswitch
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: voip-mysql
+      MYSQL_DATABASE: voip
+      MYSQL_USER: voip
+      MYSQL_PASSWORD: voip_password
+    ports:
+      - "5080:5060/udp"
+      - "5080:5060/tcp"
+      - "8021:8021/tcp"
+    volumes:
+      - freeswitch_data:/var/lib/freeswitch
+      - freeswitch_recordings:/var/lib/freeswitch/recordings
+    networks:
+      - voip-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+
+volumes:
+  mysql_data:
+  freeswitch_data:
+  freeswitch_recordings:
+
+networks:
+  voip-network:
+    driver: bridge

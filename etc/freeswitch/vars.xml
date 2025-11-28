@@ -1,0 +1,37 @@
+<include>
+  <!-- FreeSWITCH 全局变量 -->
+
+  <!-- Kamailio地址 -->
+  <X-PRE-PROCESS cmd="set" data="kamailio_ip=voip-kamailio"/>
+  <X-PRE-PROCESS cmd="set" data="kamailio_port=5060"/>
+
+  <!-- 本机设置 -->
+  <X-PRE-PROCESS cmd="set" data="local_ip_v4=auto"/>
+  <X-PRE-PROCESS cmd="set" data="external_rtp_ip=auto-nat"/>
+  <X-PRE-PROCESS cmd="set" data="external_sip_ip=auto-nat"/>
+
+  <!-- SIP配置 -->
+  <X-PRE-PROCESS cmd="set" data="internal_sip_port=5080"/>
+  <X-PRE-PROCESS cmd="set" data="internal_tls_port=5081"/>
+
+  <!-- 默认密码 (请修改) -->
+  <X-PRE-PROCESS cmd="set" data="default_password=voip1234"/>
+
+  <!-- 域名设置 -->
+  <X-PRE-PROCESS cmd="set" data="domain=$${local_ip_v4}"/>
+  <X-PRE-PROCESS cmd="set" data="domain_name=$${domain}"/>
+
+  <!-- 编解码器 -->
+  <X-PRE-PROCESS cmd="set" data="global_codec_prefs=OPUS,G722,PCMU,PCMA"/>
+  <X-PRE-PROCESS cmd="set" data="outbound_codec_prefs=OPUS,G722,PCMU,PCMA"/>
+
+  <!-- 音频设置 -->
+  <X-PRE-PROCESS cmd="set" data="hold_music=local_stream://moh"/>
+
+  <!-- 录音目录 -->
+  <X-PRE-PROCESS cmd="set" data="recordings_dir=$${base_dir}/recordings"/>
+
+  <!-- 日志级别 -->
+  <X-PRE-PROCESS cmd="set" data="console_loglevel=info"/>
+
+</include>

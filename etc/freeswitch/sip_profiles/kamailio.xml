@@ -1,0 +1,67 @@
+<profile name="kamailio">
+  <!--
+    FreeSWITCH SIP Profile for Kamailio Integration
+    用于接收来自Kamailio的呼叫，并回送呼叫到Kamailio
+  -->
+
+  <settings>
+    <!-- SIP端口 -->
+    <param name="sip-port" value="$${internal_sip_port}"/>
+    <param name="sip-ip" value="$${local_ip_v4}"/>
+
+    <!-- RTP设置 -->
+    <param name="rtp-ip" value="$${local_ip_v4}"/>
+    <param name="ext-rtp-ip" value="$${external_rtp_ip}"/>
+    <param name="ext-sip-ip" value="$${external_sip_ip}"/>
+
+    <!-- 上下文 - 使用kamailio拨号计划 -->
+    <param name="context" value="kamailio"/>
+
+    <!-- 编解码器 -->
+    <param name="inbound-codec-prefs" value="$${global_codec_prefs}"/>
+    <param name="outbound-codec-prefs" value="$${outbound_codec_prefs}"/>
+
+    <!-- NAT处理 -->
+    <param name="local-network-acl" value="localnet.auto"/>
+    <param name="apply-nat-acl" value="nat.auto"/>
+
+    <!-- 允许来自Kamailio的请求 -->
+    <param name="apply-inbound-acl" value="kamailio"/>
+
+    <!-- 用户代理 -->
+    <param name="user-agent-string" value="VoIP-FreeSWITCH"/>
+
+    <!-- 呼叫超时 -->
+    <param name="session-timeout" value="1800"/>
+
+    <!-- DTMF设置 -->
+    <param name="dtmf-type" value="rfc2833"/>
+    <param name="dtmf-duration" value="2000"/>
+
+    <!-- 媒体设置 -->
+    <param name="inbound-bypass-media" value="false"/>
+    <param name="inbound-proxy-media" value="false"/>
+
+    <!-- 保持活跃 -->
+    <param name="enable-timer" value="false"/>
+
+    <!-- 认证 - 信任Kamailio -->
+    <param name="auth-calls" value="false"/>
+
+    <!-- RTP超时 -->
+    <param name="rtp-timeout-sec" value="300"/>
+    <param name="rtp-hold-timeout-sec" value="1800"/>
+
+  </settings>
+
+  <!-- 网关定义 - 用于回送呼叫到Kamailio -->
+  <gateways>
+    <gateway name="kamailio">
+      <param name="realm" value="$${kamailio_ip}"/>
+      <param name="proxy" value="$${kamailio_ip}:$${kamailio_port}"/>
+      <param name="register" value="false"/>
+      <param name="caller-id-in-from" value="true"/>
+    </gateway>
+  </gateways>
+
+</profile>
